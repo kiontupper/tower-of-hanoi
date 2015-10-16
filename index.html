@@ -1,12 +1,25 @@
 <html>
 <head>
 <link href="http://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic,700italic" rel='stylesheet' type='text/css'>
-<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
 <title>
 Tower of Hanoi
 </title>
 </head>
 <script>
+/*
+
+AI Stuffs
+
+file:///C:/Users/Kion%20Tupper/Documents/GitHub/tower-of-hanoi/index.html
+http://stackoverflow.com/questions/14241696/how-to-get-rid-of-space-between-divs-when-display-inline-block-and-stacked-horiz
+http://natureofcode.com/book/chapter-10-neural-networks/
+file:///C:/Users/Kion%20Tupper/Desktop/Youtube%20Website.html
+http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf
+http://pastebin.com/ZZmSNaHX
+https://en.wikipedia.org/wiki/Evolutionary_algorithm
+
+*/
 var stacks = {
 	a: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
 	b: [],
@@ -14,6 +27,7 @@ var stacks = {
 };
 var moves = 0;
 var selected;
+var queue = [];
 
 $(function() {
 	$(window).keypress(function(e) {
@@ -26,6 +40,23 @@ $(function() {
 		}
 	});
 });
+
+function addQueue(first, second) {
+	moveRing(first, second);
+	queue.push(JSON.parse(JSON.stringify(stacks)))
+}
+
+function runQueue(time) {
+	var counter = 0
+	stacks = {a: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1], b: [], c: []};
+	var t = setInterval(function() {
+		stacks = queue[counter]
+		counter++;
+		if (counter >= queue.length)
+			window.clearTimeout(t);
+		renderStacks()
+	}, time);
+}
 
 function moveRing(first, second) {
 	if (stacks[first].length == 0) {
@@ -54,18 +85,45 @@ function moveStack(stackSize, first, second) {
 	}
 	//console.log(first, second, third);
 	if (stackSize < 1) {
-		moveRing(first, second);
+		addQueue(first, second);
 	} else {
 		moveStack(stackSize - 1, first, third);
-		moveRing(first, second);
+		addQueue(first, second);
 		moveStack(stackSize - 1, third, second);
 	}
 }
 
-function solve() {
+function solve(noPrompt) {
+	stacks = {a: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1], b: [], c: []}
 	moveStack(9, "a", "c");
-	moveRing("a", "c");
+	if (!noPrompt) {
+		var r = prompt("Time between each move (in milliseconds)", 50)
+		if (r) {
+			r = parseInt(r)
+		} else {
+			return;
+		}
+		runQueue(r);
+	}
 }
+
+/*function generate(a, b) {
+	return Math.floor(Math.random() * (a - b + 1)) + a;
+end
+
+function neuralNetwork() {
+	solve(true)
+	var solution = queue;
+	var fitness = 0;
+	var network = {};
+	var attempts = 0;
+	var inputs = ["a", "b", "c"];
+	var lContstant = 0.2
+	var modWeight = function(i, w, e) {
+		return w + i * e * lConstant;
+	};
+	
+}*/
 
 function renderStacks() {
 	$(".post").html("");
@@ -98,14 +156,16 @@ function updateMove(post) {
 <style>
 body {
 	transform: rotate(180deg);
-	margin: 5%;
+	margin: 0px;
+	font-size: 0px;
 }
 
 .post {
-	vertical-align: bottom;
-	width: 32%;
-	height: 80%;
+	font-size: 0px;
+	width: 30%;
+	height: 75%;
 	position: relative;
+	vertical-align: top;
 	top: 20%;
 	display: inline-block;
 	box-sizing: border-box;
@@ -123,6 +183,14 @@ body {
 
 .post:hover {
 	//background-color: rgba(0, 0, 0, 0.20);
+}
+
+.post-a {
+	float: right;
+}
+
+.post-b {
+	margin: 0% 5%
 }
 
 .bar {
@@ -151,6 +219,7 @@ body {
 	font-family: Arial;
 	line-height: 24px;
 	border-radius: 12px;
+	font-size: 18px;
 }
 
 .post-selected {
@@ -196,6 +265,12 @@ body {
 .post-checkbox {
 	display: none;
 }
+
+button {
+	width: 100%;
+	height: 5%;
+	transform: rotate(180deg);
+}
 </style>
 <body>
 <div class="bar"></div>
@@ -233,5 +308,10 @@ body {
 		1
 	</center>
 </div>
+<center>
+	<button onclick="solve();">
+		Solve
+	</button>
+</center>
 </body>
 </html>
